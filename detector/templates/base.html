@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}TruthLens{% endblock %} · TruthLens</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('main.index') }}">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+        <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2.2"/>
+        <path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="m7 10 2 2 4-4" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      TruthLens
+    </a>
+    <nav>
+      {% set ep = request.endpoint %}
+      <a href="{{ url_for('main.index') }}" class="{{ 'active' if ep in ('main.index', 'main.check') }}">Check</a>
+      <a href="{{ url_for('main.history') }}" class="{{ 'active' if ep == 'main.history' }}">History</a>
+      <a href="{{ url_for('main.stats') }}" class="{{ 'active' if ep == 'main.stats' }}">Stats</a>
+      <a href="{{ url_for('main.about') }}" class="{{ 'active' if ep == 'main.about' }}">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    TruthLens is a writing-style classifier, not a fact checker. Always verify with trusted sources.
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
