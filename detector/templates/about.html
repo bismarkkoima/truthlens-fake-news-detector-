@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<h1>How TruthLens works</h1>
+
+<section class="card prose">
+  <ol>
+    <li><b>Clean the text.</b> Lowercase it, strip links, handles and punctuation, and remove "giveaway" artifacts such as the Reuters dateline on every real story and the image credits on many fake ones. Left in, they let a model "cheat" by spotting the source instead of reading the writing.</li>
+    <li><b>Vectorise.</b> Turn the words and two-word phrases into TF-IDF features (up to 50,000 of them).</li>
+    <li><b>Classify.</b> Score the features with one of two linear models.</li>
+    <li><b>Explain.</b> Because both models are linear, each word's push towards real or fake is exactly <i>TF-IDF weight × model weight</i>. No sampling or approximation is needed.</li>
+  </ol>
+</section>
+
+<h2>Models</h2>
+{% if metrics %}
+<div class="grid2">
+  {% for key, m in metrics.items() %}
+  <section class="card">
+    <h3>{{ models.get(key, key) }}</h3>
+    <div class="tiles compact">
+      <div class="tile"><span class="tile-num">{{ (m.accuracy * 100) | round(1) }}%</span><span class="muted small">accuracy</span></div>
+      <div class="tile"><span class="tile-num">{{ (m.f1 * 100) | round(1) }}%</span><span class="muted small">F1</span></div>
+    </div>
+    <table class="table confusion">
+      <thead><tr><th></th><th>Predicted fake</th><th>Predicted real</th></tr></thead>
+      <tbody>
+        <tr><th>Actually fake</th><td>{{ m.confusion.tn }}</td><td>{{ m.confusion.fp }}</td></tr>
+        <tr><th>Actually real</th><td>{{ m.confusion.fn }}</td><td>{{ m.confusion.tp }}</td></tr>
+      </tbody>
+    </table>
+  </section>
+  {% endfor %}
+</div>
+<p class="muted small">Scores are measured on a held-out 20% test split of {{ "{:,}".format(samples) if samples else '?' }} de-duplicated articles. Trained {{ trained_at[:10] if trained_at }}.</p>
+{% else %}
+<div class="alert">No trained model found. Run <code>python train.py</code>.</div>
+{% endif %}
+
+<h2>Limitations</h2>
+<section class="card prose">
+  <ul>
+    <li>The training data is US political news from 2015–2018. Other topics, countries and time periods will be less reliable.</li>
+    <li>It judges <i>style</i>, not truth. A well-written lie can pass, and a sloppy true story can be flagged.</li>
+    <li>Short claims (one sentence) carry too little signal, so you need at least 20 words.</li>
+  </ul>
+</section>
+
+<p class="muted small">Built by <a href="https://github.com/bismarkkoima">@bismarkkoima</a>. Dataset: ISOT Fake News Dataset (University of Victoria).</p>
+{% endblock %}
