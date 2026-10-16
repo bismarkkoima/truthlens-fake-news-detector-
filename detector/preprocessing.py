@@ -16,6 +16,9 @@ _IMAGE_CREDIT = re.compile(
 _URL = re.compile(r"https?://\S+|www\.\S+|\S+\.(?:com|org|net)\S*", re.IGNORECASE)
 _HANDLE = re.compile(r"[@#]\w+")
 _APOSTROPHE = re.compile(r"[’'`]")
+# Fake stories in the dataset lost their apostrophes ("don t", "it s"), real
+# ones kept them ("don’t"). Re-join both forms so neither leaks the label.
+_BROKEN_CONTRACTION = re.compile(r"\b([a-z]+) (t|s|ve|ll|re|m|d)\b")
 _NON_LETTER = re.compile(r"[^a-z\s]")
 _SPACES = re.compile(r"\s+")
 
@@ -32,6 +35,7 @@ def clean_text(text: str) -> str:
     text = _URL.sub(" ", text)
     text = _HANDLE.sub(" ", text)
     text = _APOSTROPHE.sub("", text.lower())
+    text = _BROKEN_CONTRACTION.sub(r"\1\2", text)
     text = _NON_LETTER.sub(" ", text)
     text = _SOURCE_WORDS.sub(" ", text)
     return _SPACES.sub(" ", text).strip()

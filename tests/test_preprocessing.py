@@ -17,7 +17,8 @@ def test_strips_trailing_image_credit():
 
 def test_apostrophes_are_normalised_the_same_way():
     # The dataset mixes curly, straight and missing apostrophes.
-    assert clean_text("couldn’t") == clean_text("couldn't") == "couldnt"
+    assert clean_text("couldn’t") == clean_text("couldn't") == clean_text("couldn t") == "couldnt"
+    assert clean_text("it s over, we ve won") == "its over weve won"
 
 
 def test_removes_urls_handles_and_punctuation():
