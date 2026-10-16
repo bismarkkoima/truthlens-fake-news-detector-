@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Verdict: {{ verdict.label }}{% endblock %}
+{% block content %}
+<section class="card verdict {{ verdict.label | lower }}">
+  <div class="verdict-head">
+    <span class="badge {{ verdict.label | lower }}">{{ verdict.label }}</span>
+    <div>
+      <h1>{{ 'Likely genuine reporting' if verdict.label == 'REAL' else 'Shows signs of fake news' }}</h1>
+      <p class="muted">{{ [verdict.confidence, 99.9] | min }}% confidence · {{ verdict.model_name }}</p>
+    </div>
+  </div>
+
+  <div class="meter" role="img" aria-label="{{ (verdict.real_probability * 100) | round(1) }}% real">
+    <div class="meter-fill" style="width: {{ (verdict.real_probability * 100) | round(1) }}%"></div>
+  </div>
+  <div class="row between small muted"><span>Fake</span><span>Real</span></div>
+  {% if verdict.confidence < 65 %}
+    <p class="note">The model is unsure about this one. Treat the verdict as a coin flip.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Why?</h2>
+  <p class="muted small">The words and phrases that pushed the verdict most. Bars to the right point to <b class="real-text">real</b>, bars to the left to <b class="fake-text">fake</b>.</p>
+  {% if verdict.evidence %}
+  <ul class="evidence">
+    {% for term, weight in verdict.evidence %}
+      {% set pct = (weight | abs) / max_weight * 50 %}
+      <li>
+        <span class="term">{{ term }}</span>
+        <span class="track">
+          <span class="bar {{ 'real' if weight > 0 else 'fake' }}"
+                style="width: {{ pct | round(1) }}%; {{ 'left: 50%' if weight > 0 else 'right: 50%' }}"></span>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p class="muted">None of the words in this text appear in the model's vocabulary.</p>
+  {% endif %}
+</section>
+
+<details class="card">
+  <summary>Text you submitted</summary>
+  <p class="submitted">{{ text }}</p>
+</details>
+
+<a class="btn ghost" href="{{ url_for('main.index') }}">Check another article</a>
+{% endblock %}

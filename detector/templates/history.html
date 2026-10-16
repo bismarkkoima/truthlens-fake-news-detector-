@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<div class="row between wrap">
+  <h1>Recent checks</h1>
+  <div class="filters">
+    <a href="{{ url_for('main.history') }}" class="pill-link {{ 'active' if not label }}">All</a>
+    <a href="{{ url_for('main.history', label='FAKE') }}" class="pill-link {{ 'active' if label == 'FAKE' }}">Fake</a>
+    <a href="{{ url_for('main.history', label='REAL') }}" class="pill-link {{ 'active' if label == 'REAL' }}">Real</a>
+  </div>
+</div>
+
+{% if rows %}
+<div class="list">
+  {% for r in rows %}
+  <article class="card item">
+    <div class="row between wrap">
+      <span class="badge {{ r.label | lower }}">{{ r.label }} · {{ r.confidence }}%</span>
+      <time class="muted small" datetime="{{ r.created_at }}">{{ r.created_at | replace('T', ' ') | replace('+00:00', ' UTC') }}</time>
+    </div>
+    <p class="snippet">{{ r.snippet }}{% if r.snippet | length >= 280 %}…{% endif %}</p>
+    <p class="muted small">{{ r.words }} words · {{ models.get(r.model, r.model) if models else r.model }}</p>
+  </article>
+  {% endfor %}
+</div>
+<form method="post" action="{{ url_for('main.clear_history') }}"
+      onsubmit="return confirm('Delete all saved checks?');">
+  <button class="btn ghost danger" type="submit">Clear history</button>
+</form>
+{% else %}
+<div class="card empty">
+  <p>No checks yet{% if label %} with label {{ label }}{% endif %}.</p>
+  <a class="btn" href="{{ url_for('main.index') }}">Check an article</a>
+</div>
+{% endif %}
+{% endblock %}

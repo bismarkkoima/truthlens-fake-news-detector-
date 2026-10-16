@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Check an article{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Does this read like fake news?</h1>
+  <p class="muted">Paste a headline and article. TruthLens compares its wording with about 39,000 labelled news stories and shows you which words drove the verdict.</p>
+</section>
+
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+<form class="card" method="post" action="{{ url_for('main.check') }}">
+  <label for="text" class="label">Article text</label>
+  <textarea id="text" name="text" rows="12" required
+            placeholder="Paste the headline and body of a news article here...">{{ text or '' }}</textarea>
+  <div class="row between">
+    <span id="counter" class="muted small">0 words</span>
+    <button type="button" class="link small" id="clear">Clear</button>
+  </div>
+
+  <fieldset class="models">
+    <legend class="label">Model</legend>
+    {% for key, name in models.items() %}
+      <label class="pill">
+        <input type="radio" name="model" value="{{ key }}" {{ 'checked' if (selected or 'logreg') == key }}>
+        <span>{{ name }}</span>
+      </label>
+    {% endfor %}
+  </fieldset>
+
+  <button class="btn" type="submit">Analyse article</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  const box = document.getElementById("text");
+  const counter = document.getElementById("counter");
+  const update = () => {
+    const n = box.value.trim() ? box.value.trim().split(/\s+/).length : 0;
+    counter.textContent = n + (n === 1 ? " word" : " words") + (n && n < 20 ? " (need at least 20)" : "");
+  };
+  box.addEventListener("input", update);
+  document.getElementById("clear").addEventListener("click", () => { box.value = ""; update(); box.focus(); });
+  update();
+</script>
+{% endblock %}
