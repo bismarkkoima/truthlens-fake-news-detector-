@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Stats{% endblock %}
+{% block content %}
+<h1>Usage stats</h1>
+
+<div class="tiles">
+  <div class="tile"><span class="tile-num">{{ summary.total }}</span><span class="muted small">checks</span></div>
+  <div class="tile"><span class="tile-num fake-text">{{ summary.fake }}</span><span class="muted small">flagged fake</span></div>
+  <div class="tile"><span class="tile-num real-text">{{ summary.real }}</span><span class="muted small">looked real</span></div>
+  <div class="tile"><span class="tile-num">{{ summary.avg_conf }}%</span><span class="muted small">avg confidence</span></div>
+</div>
+
+{% if summary.total %}
+<div class="grid2">
+  <section class="card">
+    <h2>Checks per day</h2>
+    {% set day_max = summary.per_day | map(attribute='total') | max %}
+    <div class="chart" role="img" aria-label="Fake and real checks per day">
+      {% for d in summary.per_day %}
+      <div class="col" title="{{ d.day }}: {{ d.fake }} fake, {{ d.real }} real">
+        <div class="stack" style="height: {{ (d.total / day_max * 100) | round(1) }}%">
+          <span class="seg real" style="flex: {{ d.real }}"></span>
+          <span class="seg fake" style="flex: {{ d.fake }}"></span>
+        </div>
+        <span class="col-label">{{ d.day[5:] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="legend small muted"><span class="dot fake"></span>Fake <span class="dot real"></span>Real</p>
+  </section>
+  <section class="card">
+    <h2>Confidence spread</h2>
+    {% set hist_max = summary.conf_hist | max %}
+    <div class="chart" role="img" aria-label="Number of checks per confidence band">
+      {% for n in summary.conf_hist %}
+      <div class="col" title="{{ loop.index0 * 10 }}–{{ loop.index0 * 10 + 10 }}%: {{ n }} checks">
+        <div class="stack" style="height: {{ (n / hist_max * 100) | round(1) }}%"><span class="seg accent" style="flex: 1"></span></div>
+        <span class="col-label">{{ loop.index0 * 10 }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="legend small muted">Confidence band (%)</p>
+  </section>
+</div>
+<section class="card">
+  <h2>By model</h2>
+  <table class="table">
+    <thead><tr><th>Model</th><th>Checks</th><th>Avg confidence</th></tr></thead>
+    <tbody>
+    {% for m in summary.per_model %}
+      <tr><td>{{ models.get(m.model, m.model) }}</td><td>{{ m.n }}</td><td>{{ [m.avg_conf | round(1), 99.9] | min }}%</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% else %}
+<div class="card empty"><p>Stats show up here once you've checked a few articles.</p></div>
+{% endif %}
+{% endblock %}
